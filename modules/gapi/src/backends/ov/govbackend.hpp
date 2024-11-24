@@ -10,7 +10,7 @@
 // Include anyway - cv::gapi::ov::backend() still needs to be defined
 #include "opencv2/gapi/infer/ov.hpp"
 
-#ifdef HAVE_INF_ENGINE
+#if defined HAVE_INF_ENGINE && INF_ENGINE_RELEASE >= 2022010000
 
 #include <openvino/openvino.hpp>
 
@@ -25,6 +25,12 @@ struct OVCompiled {
 };
 
 class RequestPool;
+
+struct Options {
+    // Only performs inference of the model
+    // without i/o data transfer if enabled.
+    bool inference_only = false;
+};
 
 class GOVExecutable final: public GIslandExecutable
 {
@@ -42,8 +48,12 @@ class GOVExecutable final: public GIslandExecutable
     // To manage multiple async requests
     std::unique_ptr<RequestPool> m_reqPool;
 
+    // To manage additional execution options
+    Options m_options;
+
 public:
     GOVExecutable(const ade::Graph                   &graph,
+                  const cv::GCompileArgs             &compileArgs,
                   const std::vector<ade::NodeHandle> &nodes);
 
     virtual inline bool canReshape() const override { return false; }
@@ -62,5 +72,5 @@ public:
 
 }}}
 
-#endif // HAVE_INF_ENGINE
+#endif // HAVE_INF_ENGINE && INF_ENGINE_RELEASE >= 2022010000
 #endif // OPENCV_GAPI_GOVBACKEND_HPP
